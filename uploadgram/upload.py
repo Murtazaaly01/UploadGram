@@ -35,13 +35,12 @@ async def upload_dir_contents(
     console_progress: bool,
 ):
     dir_contents = []
-    if not os.path.isdir(dir_path):
-        if os.path.exists(dir_path):
-            dir_contents.append(dir_path)
-        else:
-            return False
-    else:
+    if os.path.isdir(dir_path):
         dir_contents = os.listdir(dir_path)
+    elif os.path.exists(dir_path):
+        dir_contents.append(dir_path)
+    else:
+        return False
     dir_contents.sort()
     for dir_cntn in dir_contents:
         current_name = os.path.join(dir_path, dir_cntn)
@@ -85,10 +84,7 @@ async def upload_single_file(
     usr_sent_message = bot_sent_message
     start_time = time()
     b_asen_am_e = os.path.basename(file_path)
-    caption_al_desc = f"<code>{b_asen_am_e}</code>"
-    if custom_caption:
-        caption_al_desc = custom_caption
-
+    caption_al_desc = custom_caption or f"<code>{b_asen_am_e}</code>"
     pbar = None
     if console_progress:
         pbar = tqdm(
@@ -203,7 +199,7 @@ async def upload_as_video(
     _tmp_m = await usr_sent_message.reply_video(
         video=file_path,
         quote=True,
-        thumb=thumb_nail_img if not thumbnail_file else thumbnail_file,
+        thumb=thumbnail_file or thumb_nail_img,
         duration=duration,
         width=width,
         height=height,
@@ -217,6 +213,7 @@ async def upload_as_video(
             "UpLoading to Telegram",
         ),
     )
+
     if thumb_nail_img and os.path.exists(thumb_nail_img):
         os.remove(thumb_nail_img)
     return _tmp_m
@@ -245,12 +242,10 @@ async def upload_as_audio(
             title = metadata.get("title")
         if metadata.has("artist"):
             performer = metadata.get("artist")
-        if not performer:
-            if metadata.has("author"):
-                performer = metadata.get("author")
-        if not performer:
-            if metadata.has("album"):
-                performer = metadata.get("album")
+        if not performer and metadata.has("author"):
+            performer = metadata.get("author")
+        if not performer and metadata.has("album"):
+            performer = metadata.get("album")
 
     return await usr_sent_message.reply_audio(
         audio=file_path,

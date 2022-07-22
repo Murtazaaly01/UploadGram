@@ -27,10 +27,7 @@ async def take_screen_shot(
     ttl: int
 ):
     # https://stackoverflow.com/a/13891070/4723940
-    out_put_file_name = os.path.join(
-        output_directory,
-        str(time()) + ".jpg"
-    )
+    out_put_file_name = os.path.join(output_directory, f"{str(time())}.jpg")
     if video_file.upper().endswith(TG_VIDEO_TYPES):
         file_genertor_command = [
             "ffmpeg",
@@ -44,7 +41,4 @@ async def take_screen_shot(
         ]
         # width = "90"
         await run_command(file_genertor_command)
-    if os.path.lexists(out_put_file_name):
-        return out_put_file_name
-    else:
-        return None
+    return out_put_file_name if os.path.lexists(out_put_file_name) else None
